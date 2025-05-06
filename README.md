@@ -59,7 +59,7 @@ python -m app.main
 The application will start on:  
 📍 http://0.0.0.0:5000 by default.  
 
-📡 API Endpoints  
+### 📡 API Endpoints  
 
 🔹 User Service  
 GET /users – Get all users  
@@ -71,13 +71,14 @@ GET /products – Get all products
 ↳ Defined in product_routes.py:7-10  
 GET /products/{product_id} – Get a specific product by ID  
 ↳ Defined in product_routes.py:12-18  
-🧠 Implementation Details  
 
-📦 Application Structure  
+## 🧠 Implementation Details  
+
+### 📦 Application Structure  
 The application uses Flask Blueprints to organize routes, making it modular and maintainable.  
 ↳ See __init__.py:9-11  
 
-🧩 Services  
+### 🧩 Services  
 The application includes two services:  
 
 User Service  
