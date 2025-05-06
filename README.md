@@ -57,7 +57,7 @@ Alternatively, run it directly from the app module:
 python3 -m app.main
 ```
 ### The application will start on:  
-📍 http://0.0.0.0:5000 by default.  
+📍 http://127.0.0.1:5000 by default.  
 
 ## 📡 API Endpoints  
 
