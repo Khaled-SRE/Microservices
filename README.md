@@ -36,18 +36,25 @@ Microservices/
    git clone https://github.com/Khaled-SRE/Microservices.git
    cd Microservices
 Set up a virtual environment (recommended):
+```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 Install dependencies:
+```bash
 pip install -r requirements.txt
+```
 🚀 Running the Application
 
 You can run the application using the run.py script:
 
+```bash
 python run.py
+```
 Alternatively, run it directly from the app module:
-
+```bash
 python -m app.main
+```
 The application will start on:
 📍 http://0.0.0.0:5000 by default.
 
