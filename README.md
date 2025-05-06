@@ -5,7 +5,7 @@ A simple microservices-based application built with Python and Flask. This appli
 ---
 
 ## 📁 Project Structure  
-
+```
 Microservices/
 ├── app/
 │   ├── routes/
@@ -18,6 +18,7 @@ Microservices/
 │   └── main.py
 └── run.py
 
+```
 ---
 
 ## ✨ Features
