@@ -38,23 +38,23 @@ cd Microservices
 ```
 ### Set up a virtual environment (recommended):
 ```bash
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate  
 ```
 ### Install dependencies:
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 ### 🚀 Running the Application
 
 You can run the application using the run.py script:
 
 ```bash
-python run.py
+python3 run.py
 ```
 Alternatively, run it directly from the app module:
 ```bash
-python -m app.main
+python3 -m app.main
 ```
 ### The application will start on:  
 📍 http://0.0.0.0:5000 by default.  
