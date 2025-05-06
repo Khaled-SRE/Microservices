@@ -14,9 +14,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update && apt-get install -y --no-install-recommends gcc && \  
     rm -rf /var/lib/apt/lists/*  
   
-# Create a requirements.txt file with specific versions  
-RUN echo "flask==2.0.1" > requirements.txt  
-  
+# Copy requirements file  
+COPY requirements.txt .  
+ 
 # Install dependencies  
 RUN pip install --no-cache-dir -r requirements.txt  
   
