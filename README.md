@@ -4,20 +4,19 @@ A simple microservices-based application built with Python and Flask. This appli
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Structure  
 
-Microservices/  
-├── app/  
-│ ├── routes/  
-│ │ ├── product_routes.py  
-│ │ └── user_routes.py  
-│ ├── services/  
-│ │ ├── product_service.py  
-│ │ └── user_service.py  
-│ ├── init.py  
-│ └── main.py  
-└── run.py  
-
+Microservices/
+├── app/
+│   ├── routes/
+│   │   ├── product_routes.py
+│   │   └── user_routes.py
+│   ├── services/
+│   │   ├── product_service.py
+│   │   └── user_service.py
+│   ├── __init__.py
+│   └── main.py
+└── run.py
 
 ---
 
@@ -59,14 +58,14 @@ python -m app.main
 The application will start on:  
 📍 http://0.0.0.0:5000 by default.  
 
-### 📡 API Endpoints  
+## 📡 API Endpoints  
 
-🔹 User Service  
+### 🔹 User Service  
 GET /users – Get all users  
 ↳ Defined in user_routes.py:7-10  
 GET /users/{user_id} – Get a specific user by ID  
 ↳ Defined in user_routes.py:12-18  
-🔹 Product Service  
+### 🔹 Product Service  
 GET /products – Get all products  
 ↳ Defined in product_routes.py:7-10  
 GET /products/{product_id} – Get a specific product by ID  
@@ -81,11 +80,11 @@ The application uses Flask Blueprints to organize routes, making it modular and 
 ### 🧩 Services  
 The application includes two services:  
 
-User Service  
+#### User Service  
 ↳ Manages user data  
 ↳ Located in user_service.py:1-12  
 ↳ Currently contains mock data for demonstration  
-Product Service  
+#### Product Service  
 ↳ Manages product data  
 ↳ Located in product_service.py:1-12  
 ↳ Currently contains mock data for demonstration  
