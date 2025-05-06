@@ -31,21 +31,21 @@ Microservices/
 
 ## 🛠️ Installation
 
-1. **Clone the repository**:
+### Clone the repository**:
 ```bash
 git clone https://github.com/Khaled-SRE/Microservices.git
 cd Microservices
 ```
-Set up a virtual environment (recommended):
+### Set up a virtual environment (recommended):
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  
 ```
-Install dependencies:
+### Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
-🚀 Running the Application
+### 🚀 Running the Application
 
 You can run the application using the run.py script:
 
@@ -56,21 +56,21 @@ Alternatively, run it directly from the app module:
 ```bash
 python -m app.main
 ```
-The application will start on:  
+### The application will start on:  
 📍 http://0.0.0.0:5000 by default.  
 
 ## 📡 API Endpoints  
 
 ### 🔹 User Service  
-GET /users – Get all users  
-↳ Defined in user_routes.py:7-10  
-GET /users/{user_id} – Get a specific user by ID  
-↳ Defined in user_routes.py:12-18  
+  GET /users – Get all users  
+  ↳ Defined in user_routes.py:7-10  
+  GET /users/{user_id} – Get a specific user by ID  
+  ↳ Defined in user_routes.py:12-18  
 ### 🔹 Product Service  
-GET /products – Get all products  
-↳ Defined in product_routes.py:7-10  
-GET /products/{product_id} – Get a specific product by ID  
-↳ Defined in product_routes.py:12-18  
+  GET /products – Get all products  
+  ↳ Defined in product_routes.py:7-10  
+  GET /products/{product_id} – Get a specific product by ID  
+  ↳ Defined in product_routes.py:12-18  
 
 ## 🧠 Implementation Details  
 
