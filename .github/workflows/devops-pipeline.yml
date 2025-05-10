@@ -1,0 +1,176 @@
+name: DevSecOps Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to build (product/user/both)'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - product
+          - user
+          - both
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - stg
+          - prod
+          - test
+      branch:
+        description: 'Branch to build from'
+        required: true
+        type: string
+        default: 'main'
+
+env:
+  AWS_REGION: eu-west-1
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Product Service
+        if: ${{ github.event.inputs.service == 'product' || github.event.inputs.service == 'both' }}
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_PRODUCT_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+          COMMIT_NUMBER: ${{ github.run_number }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.product
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+          platforms: linux/amd64,linux/arm64
+          provenance: false
+          sbom: false
+
+      - name: Build and push User Service
+        if: ${{ github.event.inputs.service == 'user' || github.event.inputs.service == 'both' }}
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_USER_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+          COMMIT_NUMBER: ${{ github.run_number }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.user
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+          platforms: linux/amd64,linux/arm64
+          provenance: false
+          sbom: false
+
+  update-helm-charts:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Checkout Helm Charts Repository
+        uses: actions/checkout@v3
+        with:
+          repository: Khaled-SRE/helm-charts
+          token: ${{ secrets.GH_PAT }}
+          path: helm-charts
+          ref: main
+
+      - name: Create and switch to devops-bot branch
+        run: |
+          cd helm-charts
+          git checkout -b devops-bot/update-${{ github.run_number }}
+          git config --global user.name 'DevOps Bot'
+          git config --global user.email 'devops-bot@github.com'
+
+      - name: Update Product Service Chart
+        if: ${{ github.event.inputs.service == 'product' || github.event.inputs.service == 'both' }}
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          COMMIT_NUMBER: ${{ github.run_number }}
+          ENVIRONMENT: ${{ github.event.inputs.environment }}
+        run: |
+          cd helm-charts
+          # Update version in Chart.yaml
+          yq e -i '.version = "0.1.0-'$COMMIT_NUMBER'"' ./microservices/Chart.yaml
+          # Update image tag in values
+          yq e -i '.image.tag = "'$IMAGE_TAG'"' ./microservices/environments/$ENVIRONMENT/values-product.yaml
+          git add ./microservices/Chart.yaml ./microservices/environments/$ENVIRONMENT/values-product.yaml
+          git commit -m "Update product service to version 0.1.0-$COMMIT_NUMBER with image $IMAGE_TAG in $ENVIRONMENT"
+
+      - name: Update User Service Chart
+        if: ${{ github.event.inputs.service == 'user' || github.event.inputs.service == 'both' }}
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          COMMIT_NUMBER: ${{ github.run_number }}
+          ENVIRONMENT: ${{ github.event.inputs.environment }}
+        run: |
+          cd helm-charts
+          # Update version in Chart.yaml
+          yq e -i '.version = "0.1.0-'$COMMIT_NUMBER'"' ./microservices/Chart.yaml
+          # Update image tag in values
+          yq e -i '.image.tag = "'$IMAGE_TAG'"' ./microservices/environments/$ENVIRONMENT/values-user.yaml
+          git add ./microservices/Chart.yaml ./microservices/environments/$ENVIRONMENT/values-user.yaml
+          git commit -m "Update user service to version 0.1.0-$COMMIT_NUMBER with image $IMAGE_TAG in $ENVIRONMENT"
+
+      - name: Push changes and create PR
+        run: |
+          cd helm-charts
+          git push origin devops-bot/update-${{ github.run_number }}
+          
+          # Create Pull Request
+          gh pr create \
+            --title "Update services to version 0.1.0-${{ github.run_number }}" \
+            --body "Automated update of service images:
+            - Product Service: ${{ github.sha }}
+            - User Service: ${{ github.sha }}
+            - Environment: ${{ github.event.inputs.environment }}" \
+            --base main \
+            --head devops-bot/update-${{ github.run_number }}
+          
+          # Auto-approve the PR
+          gh pr merge devops-bot/update-${{ github.run_number }} --auto --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }} 
