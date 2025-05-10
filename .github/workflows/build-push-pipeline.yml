@@ -181,7 +181,7 @@ jobs:
           cd helm-charts
           git push origin devops-bot/update-${{ github.run_number }}
           
-          # Create Pull Request
+          # Create Pull Request and merge it
           gh pr create \
             --title "Update services to version 0.1.0-${{ github.run_number }}" \
             --body "Automated update of service images:
@@ -189,9 +189,10 @@ jobs:
             - User Service: ${{ github.sha }}
             - Environment: ${{ github.event.inputs.environment }}" \
             --base main \
-            --head devops-bot/update-${{ github.run_number }}
-          
-          # Auto-approve the PR
-          gh pr merge devops-bot/update-${{ github.run_number }} --auto --merge
+            --head devops-bot/update-${{ github.run_number }} \
+            --label "automated" \
+            --assignee "@me" \
+            --reviewer "@me" \
+            --auto-merge
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }} 
