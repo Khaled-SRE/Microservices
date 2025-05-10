@@ -125,6 +125,26 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: helm-charts
           ref: main
+          ssh-strict: true
+          persist-credentials: true
+          clean: true
+          sparse-checkout-cone-mode: true
+          fetch-depth: 1
+          fetch-tags: false
+          lfs: false
+          submodules: false
+          set-safe-directory: true
+
+      - name: Delete existing devops-bot branch if exists
+        run: |
+          cd helm-charts
+          git fetch origin
+          if git show-ref --verify --quiet refs/remotes/origin/devops-bot/update-${{ github.run_number }}; then
+            echo "Deleting existing branch devops-bot/update-${{ github.run_number }}"
+            git push origin --delete devops-bot/update-${{ github.run_number }} || true
+          else
+            echo "Branch devops-bot/update-${{ github.run_number }} does not exist"
+          fi
 
       - name: Create and switch to devops-bot branch
         run: |
