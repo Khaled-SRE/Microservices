@@ -21,11 +21,23 @@ on:
           - stg
           - prod
           - test
-      branch:
-        description: 'Branch to build from'
+      build_type:
+        description: 'Build from branch or specific commit'
         required: true
+        default: 'branch'
+        type: choice
+        options:
+          - branch
+          - commit
+      branch:
+        description: 'Branch to build from (if build_type is branch)'
+        required: false
         type: string
         default: 'main'
+      commit_sha:
+        description: 'Specific commit SHA to build from (if build_type is commit)'
+        required: false
+        type: string
 
 env:
   AWS_REGION: eu-west-1
@@ -41,7 +53,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ github.event.inputs.build_type == 'branch' && github.event.inputs.branch || github.event.inputs.commit_sha }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -60,7 +72,7 @@ jobs:
         if: ${{ github.event.inputs.service == 'product' || github.event.inputs.service == 'both' }}
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_PRODUCT_REPOSITORY }}
+          ECR_REPOSITORY: microservices-product
           IMAGE_TAG: ${{ github.sha }}
           COMMIT_NUMBER: ${{ github.run_number }}
         uses: docker/build-push-action@v5
@@ -83,7 +95,7 @@ jobs:
         if: ${{ github.event.inputs.service == 'user' || github.event.inputs.service == 'both' }}
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_USER_REPOSITORY }}
+          ECR_REPOSITORY: microservices-user
           IMAGE_TAG: ${{ github.sha }}
           COMMIT_NUMBER: ${{ github.run_number }}
         uses: docker/build-push-action@v5
