@@ -122,7 +122,7 @@ jobs:
       - name: Checkout Helm Charts Repository
         uses: actions/checkout@v3
         with:
-          repository: Khaled-SRE/helm-charts
+          repository: Khaled-SRE/Helm-Charts
           token: ${{ secrets.GH_PAT }}
           path: helm-charts
           ref: main
